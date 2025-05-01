@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindly - Your Mental Health Assistant</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --chat-bg: #ffffff;
+            --accent-color: #6a9be2;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --message-sent: #e3f2fd;
+            --message-received: #f1f1f1;
+            --typing-cursor-color: #666666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        header {
+            background-color: var(--chat-bg);
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--accent-color);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .welcome-container {
+            text-align: center;
+            margin: 2rem 0;
+            animation: fadeIn 1s ease;
+        }
+
+        .welcome-container h2 {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .welcome-container p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--chat-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            line-height: 1.5;
+            position: relative;
+            animation: messageAppear 0.3s ease;
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background-color: var(--message-received);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background-color: var(--message-sent);
+            border-bottom-right-radius: 4px;
+            color: var(--text-primary);
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+            text-align: right;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 0.3rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--message-received);
+            width: fit-content;
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            margin-bottom: 0.5rem;
+            align-self: flex-start;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-secondary);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        .input-area {
+            display: flex;
+            padding: 1rem;
+            gap: 0.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 24px;
+            outline: none;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+            resize: none;
+            max-height: 120px;
+            min-height: 44px;
+        }
+
+        #message-input:focus {
+            border-color: var(--accent-color);
+        }
+
+        #send-button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        #send-button:hover {
+            transform: scale(1.05);
+            background-color: #5989c7;
+        }
+
+        #send-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .resource-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .resource-link {
+            background-color: #e9ecef;
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .resource-link:hover {
+            background-color: #dee2e6;
+        }
+
+        .dark-mode {
+            --primary-bg: #121212;
+            --chat-bg: #1e1e1e;
+            --accent-color: #90caf9;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --message-sent: #0d47a1;
+            --message-received: #323232;
+        }
+        
+        .numbered-list {
+            margin-left: 1.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .numbered-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+        }
+
+        @media (max-width: 768px) {
+            .message {
+                max-width: 90%;
+            }
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .suggestion-chip {
+            background-color: #f1f1f1;
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .suggestion-chip:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .typing-text-container {
+            min-height: 20px;
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background-color: var(--typing-cursor-color);
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1>Mindly</h1>
+        </div>
+        <button class="theme-toggle" id="theme-toggle">🌙</button>
+    </header>
+    
+    <main>
+        <div class="welcome-container">
+            <h2>Welcome to Mindly</h2>
+            <p>Your personal mental health assistant. Share your thoughts and feelings in a safe, judgment-free space.</p>
+        </div>
+        
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="message received">
+                    Hi there! I'm Mindly, your mental health assistant. How are you feeling today?
+                    <div class="message-time">Just now</div>
+                </div>
+                
+                <div class="suggestions">
+                    <button class="suggestion-chip" onclick="sendSuggestion(this)">I'm feeling anxious</button>
+                    <button class="suggestion-chip" onclick="sendSuggestion(this)">I've been feeling down lately</button>
+                    <button class="suggestion-chip" onclick="sendSuggestion(this)">I need help with stress</button>
+                    <button class="suggestion-chip" onclick="sendSuggestion(this)">How can you help me?</button>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <textarea id="message-input" placeholder="Type your message here..." rows="1"></textarea>
+                <button id="send-button" disabled>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        $(document).ready(function() {
+            const themeToggle = document.getElementById("theme-toggle");
+            const messages = document.getElementById("messages");
+            const messageInput = document.getElementById("message-input");
+            const sendButton = document.getElementById("send-button");
+            
+            // Theme Toggle
+            themeToggle.addEventListener("click", () => {
+                document.body.classList.toggle("dark-mode");
+                themeToggle.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
+            });
+            
+            // Auto-resize textarea
+            messageInput.addEventListener("input", () => {
+                messageInput.style.height = "auto";
+                messageInput.style.height = (messageInput.scrollHeight) + "px";
+                sendButton.disabled = messageInput.value.trim() === "";
+            });
+            
+            // Send message on Enter (but allow Shift+Enter for new lines)
+            messageInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!sendButton.disabled) {
+                        sendMessage();
+                    }
+                }
+            });
+            
+            // Send button click
+            sendButton.addEventListener("click", sendMessage);
+            
+            // Send message function
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                if (message === "") return;
+                
+                // Add user message
+                addUserMessage(message);
+                
+                // Clear input
+                messageInput.value = "";
+                messageInput.style.height = "auto";
+                sendButton.disabled = true;
+                
+                // Show typing indicator
+                showTypingIndicator();
+                
+                // Send message to Flask backend
+                $.ajax({
+                    url: "/get",
+                    type: "POST",
+                    data: {msg: message},
+                    success: function(response) {
+                        removeTypingIndicator();
+                        processResponse(response);
+                    },
+                    error: function() {
+                        removeTypingIndicator();
+                        addBotMessage("Sorry, I'm having trouble connecting right now. Please try again later.");
+                    }
+                });
+            }
+            
+            // Process and format the response from the server
+            function processResponse(response) {
+                // Look for numbered points format (1. Point...)
+                const hasNumberedPoints = response.match(/\d+\.\s.+/g);
+                
+                if (hasNumberedPoints) {
+                    // Create a message with proper HTML list formatting
+                    const messageElement = document.createElement("div");
+                    messageElement.classList.add("message", "received");
+                    
+                    // Extract any text before the first numbered point
+                    let introText = "";
+                    const firstPointIndex = response.indexOf("1.");
+                    if (firstPointIndex > 0) {
+                        introText = response.substring(0, firstPointIndex).trim();
+                    }
+                    
+                    // Create a container for the typing effect
+                    const typingContainer = document.createElement("div");
+                    typingContainer.classList.add("typing-text-container");
+                    messageElement.appendChild(typingContainer);
+                    
+                    // Add time element now
+                    const timeElement = document.createElement("div");
+                    timeElement.classList.add("message-time");
+                    timeElement.textContent = getCurrentTime();
+                    messageElement.appendChild(timeElement);
+                    
+                    // Add the message to DOM before starting the typing effect
+                    messages.appendChild(messageElement);
+                    scrollToBottom();
+                    
+                    // Start with intro text if any
+                    let fullContent = "";
+                    let currentContent = "";
+                    
+                    if (introText) {
+                        fullContent += `<p style="margin-bottom: 0.5rem">${introText}</p>`;
+                    }
+                    
+                    // Add the numbered list
+                    fullContent += '<ol class="numbered-list">';
+                    
+                    // Extract each point
+                    const points = response.match(/\d+\.\s.+/g);
+                    points.forEach(point => {
+                        const pointText = point.replace(/^\d+\.\s/, "");
+                        fullContent += `<li>${pointText}</li>`;
+                    });
+                    
+                    fullContent += '</ol>';
+                    
+                    // Execute typing effect
+                    typeWriter(typingContainer, fullContent, 0, 10);
+                    
+                } else {
+                    // Regular text response
+                    addBotMessageWithTyping(response);
+                }
+                
+                scrollToBottom();
+            }
+            
+            // Add user message to the chat
+            function addUserMessage(text) {
+                const messageElement = document.createElement("div");
+                messageElement.classList.add("message", "sent");
+                messageElement.textContent = text;
+                
+                const timeElement = document.createElement("div");
+                timeElement.classList.add("message-time");
+                timeElement.textContent = getCurrentTime();
+                
+                messageElement.appendChild(timeElement);
+                messages.appendChild(messageElement);
+                scrollToBottom();
+                
+                // Hide any suggestion chips
+                const suggestions = document.querySelector(".suggestions");
+                if (suggestions) {
+                    suggestions.classList.add("hidden");
+                }
+            }
+            
+            // Add bot message to the chat with typing effect
+            function addBotMessageWithTyping(text) {
+                const messageElement = document.createElement("div");
+                messageElement.classList.add("message", "received");
+                
+                // Create a container for the typing effect
+                const typingContainer = document.createElement("div");
+                typingContainer.classList.add("typing-text-container");
+                messageElement.appendChild(typingContainer);
+                
+                const timeElement = document.createElement("div");
+                timeElement.classList.add("message-time");
+                timeElement.textContent = getCurrentTime();
+                
+                messageElement.appendChild(timeElement);
+                messages.appendChild(messageElement);
+                scrollToBottom();
+                
+                // Execute typing effect
+                typeWriter(typingContainer, text, 0, 15);
+            }
+            
+            // Standard bot message addition (without typing effect)
+            function addBotMessage(text) {
+                const messageElement = document.createElement("div");
+                messageElement.classList.add("message", "received");
+                messageElement.textContent = text;
+                
+                const timeElement = document.createElement("div");
+                timeElement.classList.add("message-time");
+                timeElement.textContent = getCurrentTime();
+                
+                messageElement.appendChild(timeElement);
+                messages.appendChild(messageElement);
+                scrollToBottom();
+            }
+            
+            // Show typing indicator
+            function showTypingIndicator() {
+                const typingIndicator = document.createElement("div");
+                typingIndicator.classList.add("typing-indicator");
+                typingIndicator.id = "typing-indicator";
+                
+                for (let i = 0; i < 3; i++) {
+                    const dot = document.createElement("div");
+                    dot.classList.add("dot");
+                    typingIndicator.appendChild(dot);
+                }
+                
+                messages.appendChild(typingIndicator);
+                scrollToBottom();
+            }
+            
+            // Remove typing indicator
+            function removeTypingIndicator() {
+                const typingIndicator = document.getElementById("typing-indicator");
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            }
+            
+            // Function to add suggestion chips (now unused as per requirement)
+            function addSuggestionChips() {
+                // This function is now empty since we don't want to add suggestions after AI responses
+                // It's kept here in case you want to re-enable this feature in the future
+            }
+            
+            // Get current time in 12-hour format
+            function getCurrentTime() {
+                const now = new Date();
+                let hours = now.getHours();
+                let minutes = now.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                
+                return `${hours}:${minutes} ${ampm}`;
+            }
+            
+            // Type writer effect for text
+            function typeWriter(element, text, i, speed) {
+                if (i === 0) {
+                    element.innerHTML = '';
+                }
+                
+                if (i < text.length) {
+                    // When dealing with HTML content, we need to handle it differently
+                    if (text.includes('<')) {
+                        // Handling HTML content
+                        element.innerHTML = text.substring(0, i + 1);
+                        
+                        // Add blinking cursor at the end
+                        const cursorElement = document.createElement('span');
+                        cursorElement.classList.add('cursor');
+                        element.appendChild(cursorElement);
+                        
+                        // Continue typing
+                        setTimeout(function() {
+                            element.removeChild(cursorElement);
+                            typeWriter(element, text, i + 1, speed);
+                        }, speed);
+                    } else {
+                        // Simple text content
+                        element.innerHTML = text.substring(0, i + 1);
+                        
+                        // Add blinking cursor
+                        const cursorElement = document.createElement('span');
+                        cursorElement.classList.add('cursor');
+                        element.appendChild(cursorElement);
+                        
+                        // Continue typing
+                        setTimeout(function() {
+                            element.removeChild(cursorElement);
+                            typeWriter(element, text, i + 1, speed);
+                        }, speed);
+                    }
+                    
+                    // Always scroll to keep text in view
+                    scrollToBottom();
+                }
+            }
+            
+            // Scroll to bottom of chat
+            function scrollToBottom() {
+                messages.scrollTop = messages.scrollHeight;
+            }
+        });
+        
+        // Function to send suggestion chip text
+        function sendSuggestion(element) {
+            const text = element.textContent;
+            document.getElementById("message-input").value = text;
+            document.getElementById("send-button").disabled = false;
+            document.getElementById("send-button").click();
+        }
+    </script>
+</body>
+</html>
