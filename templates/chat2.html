@@ -46,17 +46,57 @@
             </div>
           
 
-            <div class="input-area">
-                <textarea id="message-input" placeholder="Type your message here..." rows="1"></textarea>
-                <button id="send-button" disabled>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                </button>
+          <!-- Modify your input area in chat2.html -->
+<div class="input-area">
+    {% if 'user_id' in session %}
+    <button class="clear-chat-btn" onclick="clearChat()" title="Clear chat history">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M5 6l1 15a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-15M10 11v6M14 11v6M4 6h16"/>
+        </svg>
+    </button>
+    {% endif %}
+    <textarea id="message-input" placeholder="Type your message here..." rows="1"></textarea>
+    <button id="send-button" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+    </button>
+</div>
+        </div>
+        
+        <div class="welcome-popup" id="welcomePopup">
+            <div class="popup-content">
+                <button class="close-btn" onclick="closePopup()">&times;</button>
+                <div class="greeting-container">
+                    <h3 class="greeting">Welcome to Mindly</h3>
+                    <div class="quote-container">
+                        <p id="dailyQuote"></p>
+                    </div>
+                </div>
             </div>
         </div>
-
+        <div class="custom-confirm-modal" id="clearConfirmModal">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4>Clear Conversation</h4>
+                    <button class="modal-close" onclick="hideClearModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <svg class="warning-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                    <p>This will permanently delete all chat history from our servers. This action cannot be undone.</p>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="hideClearModal()">Cancel</button>
+                    <button class="btn-primary" onclick="confirmClear()">Clear Chat</button>
+                </div>
+            </div>
+        </div>
+        
     <style>
         main {
             flex: 1;
@@ -67,6 +107,237 @@
             width: 100%;
             margin: 0 auto;
         }
+.custom-confirm-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1001;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    position: relative;
+    z-index: 1002;
+    background: var(--chat-bg);
+    max-width: 400px;
+    margin: 2rem auto;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.modal-header h4 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: var(--accent-color);
+}
+
+.modal-body {
+    padding: 2rem 1.5rem;
+    text-align: center;
+}
+
+.warning-icon {
+    width: 48px;
+    height: 48px;
+    fill: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.modal-body p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.modal-actions .btn-primary {
+    background: var(--accent-color);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.modal-actions .btn-secondary {
+    background: rgba(108, 154, 181, 0.1);
+    color: var(--accent-color);
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.modal-actions .btn-primary:hover {
+    background: #5989c7;
+    transform: translateY(-1px);
+}
+
+.modal-actions .btn-secondary:hover {
+    background: rgba(108, 154, 181, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Improved modal backdrop click handling */
+.modal-backdrop {
+    cursor: pointer;
+}
+
+.modal-content {
+    cursor: default;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+        .clear-chat-btn {
+    background: rgba(224, 122, 95, 0.1);
+    color: #e07a5f;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    margin-right: 0.5rem;
+}
+
+.clear-chat-btn:hover {
+    background: rgba(224, 122, 95, 0.2);
+    transform: rotate(15deg);
+}
+
+.clear-chat-btn:active {
+    transform: scale(0.95);
+}
+
+        .welcome-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(108, 155, 186, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.5s ease-out;
+}
+
+.popup-content {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2.5rem;
+    border-radius: 20px;
+    max-width: 600px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    margin: 1rem;
+}
+
+.greeting {
+    font-size: 2rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.quote-container {
+    margin: 2rem 0;
+}
+
+#dailyQuote {
+    font-size: 1.3rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 0 1rem;
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    color: var(--accent-color);
+    transform: rotate(90deg);
+}
+
+@keyframes floatIn {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
         .chat-container {
     display: flex;
     flex-direction: column;
@@ -567,7 +838,8 @@
                 if (suggestions) {
                     suggestions.classList.add("hidden");
                 }
-            }
+                messageElement.setAttribute('data-temp', 'true');           
+             }
             
             // Add bot message to the chat with typing effect
             function addBotMessageWithTyping(text) {
@@ -605,6 +877,7 @@
                 messageElement.appendChild(timeElement);
                 messages.appendChild(messageElement);
                 setTimeout(scrollToBottom, 50);
+                messageElement.setAttribute('data-temp', 'true'); 
             }
             
             // Show typing indicator
@@ -722,6 +995,134 @@
     scrollToBottom();
 });
 resizeObserver.observe(document.getElementById('messages'));
+// Add motivational quotes array
+const motivationalQuotes = [
+    `"You are allowed to take up space. Your voice matters as much as anyone else's."`,
+    `"Healing is not about fixing what's broken, it's about rediscovering what was never damaged."`,
+    `"The strongest people are those who face their storms while still hoping for sunshine."`,
+    `"Your mental health is not a destination, but a journey. Be gentle with yourself along the way."`,
+    `"You don't have to be perfect to be worthy of love and care - you already are."`,
+    `"Every small step forward is a victory. Celebrate your progress, no matter how tiny."`,
+    `"Your feelings are valid, even when they're uncomfortable. They're messengers, not enemies."`
+];
 
+function showWelcomePopup() {
+    const popup = document.getElementById('welcomePopup');
+    const quoteElement = document.getElementById('dailyQuote');
+    
+    const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+    quoteElement.textContent = randomQuote;
+
+    setTimeout(() => {
+        popup.style.opacity = '0';
+        setTimeout(() => popup.remove(), 600);
+    }, 3000); // Auto-close after 5 seconds
+}
+
+function closePopup() {
+    const popup = document.getElementById('welcomePopup');
+    popup.style.opacity = '0';
+    setTimeout(() => popup.remove(), 800);
+}
+
+$(document).ready(function() {
+    setTimeout(showWelcomePopup, 0); // Show after 0.8s delay
+});
+
+function clearChat() {
+    showClearModal();
+}
+
+
+function confirmClear() {
+    // Your existing clear logic here
+    if(localStorage.getItem('hideHistory')) {
+        localStorage.removeItem('hideHistory');
+    }
+    localStorage.setItem('hideHistory', 'true');
+    
+    const historyHeader = document.querySelector('.history-header');
+    const historyMessages = document.querySelectorAll('.message.sent, .message.received');
+    
+    if(historyHeader) historyHeader.remove();
+    historyMessages.forEach(msg => {
+        if(!msg.classList.contains('suggestions') && 
+           !msg.innerHTML.includes('Hi there!') &&
+           !msg.hasAttribute('data-temp')) {
+            msg.remove();
+        }
+    });
+    
+    document.querySelector('.suggestions').classList.remove('hidden');
+    scrollToBottom();
+    hideClearModal();
+}
+
+function showClearModal() {
+    document.getElementById('clearConfirmModal').style.display = 'block';
+}
+
+function hideClearModal() {
+    document.getElementById('clearConfirmModal').style.display = 'none';
+}
+
+function confirmClear() {
+    fetch('/clear_history', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (response.ok) {
+            // Remove all messages except initial bot message
+            const messagesContainer = document.getElementById('messages');
+            Array.from(messagesContainer.children).forEach(child => {
+                if (!child.innerHTML.includes('Hi there! I\'m Mindly')) {
+                    child.remove();
+                }
+            });
+            
+            // Show suggestions again
+            document.querySelector('.suggestions').classList.remove('hidden');
+            scrollToBottom();
+        } else {
+            alert('Error clearing history');
+        }
+    })
+    .catch(error => console.error('Error:', error))
+    .finally(() => hideClearModal());
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('clearConfirmModal');
+    if(e.target === modal) {
+        hideClearModal();
+    }
+});
+
+// Close with ESC key
+document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') {
+        hideClearModal();
+    }
+});
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('clearConfirmModal');
+    if(e.target.closest('.modal-backdrop')) {
+        hideClearModal();
+    }
+});
+
+
+// Check storage on page load
+$(document).ready(function() {
+    // Only initialize the chat, no history hiding
+    setTimeout(showWelcomePopup, 800);
+    scrollToBottom();
+});
     </script>
 {% endblock %}

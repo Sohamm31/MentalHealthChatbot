@@ -216,7 +216,26 @@ def index():
         return render_template("chat2.html", messages=[])
     finally:
         cursor.close()
-
+# Add this route to your Flask app (app2.py)
+@app.route("/clear_history", methods=["POST"])
+def clear_history():
+    if "user_id" not in session:
+        return jsonify({"status": "unauthorized"}), 401
+    
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "DELETE FROM messages WHERE user_id = %s",
+            (session["user_id"],)
+        )
+        db.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        logging.error(f"Error clearing history: {str(e)}")
+        return jsonify({"status": "error"}), 500
+    finally:
+        cursor.close()
 @app.route("/get", methods=["POST"])
 def chat():
     try:
