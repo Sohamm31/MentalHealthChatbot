@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindly - Your Mental Health Assistant</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --chat-bg: #ffffff;
+            --accent-color: #6a9be2;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --message-sent: #e3f2fd;
+            --message-received: #f1f1f1;
+            --typing-cursor-color: #666666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        header {
+            background-color: var(--chat-bg);
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--accent-color);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .auth-button {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border: 1px solid var(--accent-color);
+        }
+
+        .auth-button:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .welcome-message {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .dark-mode {
+            --primary-bg: #121212;
+            --chat-bg: #1e1e1e;
+            --accent-color: #90caf9;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --message-sent: #0d47a1;
+            --message-received: #323232;
+        }
+
+          .logo a {
+            text-decoration: none;
+            color: inherit;
+          }
+
+          .logo a:hover {
+            text-decoration: none;
+          }
+
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+      <div class="logo">
+        <a href="{{ url_for('index') }}">
+            <h1>Mindly</h1>
+        </a>
+    </div>
+        <div class="header-actions">
+            {% if 'user_id' in session %}
+                <span class="welcome-message">Welcome, {{ session['user_name'] }}</span>
+                <a href="/logout" class="auth-button">Logout</a>
+            {% else %}
+                <a href="/login" class="auth-button">Login</a>
+                <a href="/register" class="auth-button">Register</a>
+            {% endif %}
+            <button class="theme-toggle" id="theme-toggle">🌙</button>
+        </div>
+    </header>
+    
+    {% block content %}{% endblock %}
+
+    <script>
+        // Theme toggle script that should be available to all pages
+        $(document).ready(function() {
+            const themeToggle = document.getElementById("theme-toggle");
+            
+            // Theme Toggle
+            themeToggle.addEventListener("click", () => {
+                document.body.classList.toggle("dark-mode");
+                themeToggle.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
+            });
+        });
+    </script>
+</body>
+</html>

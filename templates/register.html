@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mindly-container">
+  <div class="floating-card">
+    <div class="card-inner">
+      <h2 class="form-title">Join Mindly</h2>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert">
+          {% for category, message in messages %}
+            <div class="alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+      <form method="POST">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group">
+          {{ form.name.label(class="form-label") }}
+          <div class="input-wrapper">
+            <i class="input-icon user-icon"></i>
+            {{ form.name(class="form-control", placeholder="Enter your name") }}
+          </div>
+          {% for error in form.name.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
+        
+        <div class="form-group">
+          {{ form.email.label(class="form-label") }}
+          <div class="input-wrapper">
+            <i class="input-icon email-icon"></i>
+            {{ form.email(class="form-control", placeholder="Enter your email") }}
+          </div>
+          {% for error in form.email.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
+        
+        <div class="form-group">
+          {{ form.password.label(class="form-label") }}
+          <div class="input-wrapper">
+            <i class="input-icon password-icon"></i>
+            {{ form.password(class="form-control", placeholder="Create a password") }}
+          </div>
+          {% for error in form.password.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
+        
+        <div class="form-actions">
+          {{ form.submit(class="btn btn-primary") }}
+          <a href="{{ url_for('login') }}" class="btn btn-secondary">Already have an account?</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <div class="floating-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+    <div class="shape shape-4"></div>
+  </div>
+</div>
+
+<style>
+  :root {
+    --primary-color: #7c9eb2;
+    --secondary-color: #a5d8ff;
+    --accent-color: #94c9a9;
+    --accent-color-2: #b5c9c3;
+    --text-color: #456268;
+    --background-color: #f0f7ff;
+    --card-color: rgba(255, 255, 255, 0.85);
+    --shadow-color: rgba(108, 154, 181, 0.2);
+  }
+
+  body {
+    background: linear-gradient(135deg, var(--background-color), #e1eef6);
+    font-family: 'Nunito', sans-serif;
+    color: var(--text-color);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1000px;
+    overflow-x: hidden;
+  }
+
+  .mindly-container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 20px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+  }
+
+  .floating-card {
+    width: 100%;
+    max-width: 450px;
+    background: var(--card-color);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px var(--shadow-color);
+    padding: 2rem;
+    transform-style: preserve-3d;
+    animation: float 6s ease-in-out infinite;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  .card-inner {
+    transform: translateZ(20px);
+  }
+
+  .form-title {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-weight: 600;
+  }
+
+  .input-wrapper {
+    position: relative;
+  }
+
+  .input-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    color: var(--primary-color);
+    opacity: 0.7;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border-radius: 10px;
+    border: 2px solid rgba(108, 154, 181, 0.2);
+    background: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+    color: var(--text-color);
+    font-size: 1rem;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 4px rgba(148, 201, 169, 0.2);
+  }
+
+  .form-actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .btn {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    box-shadow: 0 4px 15px rgba(124, 158, 178, 0.4);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(124, 158, 178, 0.6);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(124, 158, 178, 0.1);
+    transform: translateY(-3px);
+  }
+
+  .text-danger {
+    color: #e07a5f;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+
+  .alert {
+    background: rgba(224, 122, 95, 0.2);
+    border-left: 4px solid #e07a5f;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    color: #c2462e;
+  }
+
+  /* Floating shapes */
+  .floating-shapes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(10px);
+    opacity: 0.6;
+  }
+
+  .shape-1 {
+    background: var(--secondary-color);
+    width: 150px;
+    height: 150px;
+    top: 15%;
+    right: 10%;
+    animation: float-shape 8s ease-in-out infinite;
+  }
+
+  .shape-2 {
+    background: var(--accent-color);
+    width: 200px;
+    height: 200px;
+    bottom: 10%;
+    left: 15%;
+    animation: float-shape 12s ease-in-out infinite reverse;
+  }
+
+  .shape-3 {
+    background: var(--primary-color);
+    width: 100px;
+    height: 100px;
+    top: 60%;
+    right: 20%;
+    animation: float-shape 10s ease-in-out infinite 2s;
+  }
+
+  .shape-4 {
+    background: var(--accent-color-2);
+    width: 120px;
+    height: 120px;
+    bottom: 30%;
+    right: 45%;
+    animation: float-shape 9s ease-in-out infinite 1s;
+  }
+
+  /* Animations */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) rotateX(2deg) rotateY(3deg);
+    }
+    50% {
+      transform: translateY(-15px) rotateX(-2deg) rotateY(-3deg);
+    }
+  }
+
+  @keyframes float-shape {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(20px, -20px) scale(1.1);
+    }
+  }
+
+  /* Icons */
+  .user-icon::before {
+    content: "👤";
+  }
+
+  .email-icon::before {
+    content: "✉️";
+  }
+
+  .password-icon::before {
+    content: "🔒";
+  }
+
+  /* For smaller screens */
+  @media (max-width: 576px) {
+    .floating-card {
+      padding: 1.5rem;
+    }
+    
+    .form-title {
+      font-size: 1.75rem;
+    }
+    
+    .btn {
+      padding: 10px 16px;
+    }
+  }
+</style>
+{% endblock %}
