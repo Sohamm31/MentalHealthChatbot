@@ -1,5 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
+<style>
+    .global-frost {
+        background: rgba(255, 255, 255, 0.4) !important;
+    }
+    body, html {
+        overflow: hidden !important;
+        height: 100%;
+        overscroll-behavior: contain;
+    }
+    </style>
+
     <main>
         <div class="welcome-container">
             <h2>Welcome to Mindly {{ session['user_name'] }}</h2>
@@ -13,8 +24,6 @@
                         Hi there! I'm Mindly, your mental health assistant. How are you feeling today?
                         <div class="message-time">Just now</div>
                     </div>
-
-                   
 
                     {% if messages %}
                     <div class="history-header">
@@ -41,31 +50,28 @@
                     <button class="suggestion-chip" onclick="sendSuggestion(this)">I'm feeling anxious</button>
                     <button class="suggestion-chip" onclick="sendSuggestion(this)">I've been feeling down lately</button>
                     <button class="suggestion-chip" onclick="sendSuggestion(this)">I need help with stress</button>
-                    
                 </div>
             </div>
-          
 
-          <!-- Modify your input area in chat2.html -->
-<div class="input-area">
-    {% if 'user_id' in session %}
-    <button class="clear-chat-btn" onclick="clearChat()" title="Clear chat history">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 6h18M5 6l1 15a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-15M10 11v6M14 11v6M4 6h16"/>
-        </svg>
-    </button>
-    {% endif %}
-    <textarea id="message-input" placeholder="Type your message here..." rows="1"></textarea>
-    <button id="send-button" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-        </svg>
-    </button>
-</div>
+            <div class="input-area">
+                {% if 'user_id' in session %}
+                <button class="clear-chat-btn" onclick="clearChat()" title="Clear chat history">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M5 6l1 15a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-15M10 11v6M14 11v6M4 6h16"/>
+                    </svg>               
+                 </button>
+                {% endif %}
+                <textarea id="message-input" placeholder="Type your message here..." rows="1"></textarea>
+                <button id="send-button" disabled>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
         </div>
         
-        <div class="welcome-popup" id="welcomePopup">
+        <!-- <div class="welcome-popup" id="welcomePopup">
             <div class="popup-content">
                 <button class="close-btn" onclick="closePopup()">&times;</button>
                 <div class="greeting-container">
@@ -75,7 +81,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
         <div class="custom-confirm-modal" id="clearConfirmModal">
             <div class="modal-backdrop"></div>
             <div class="modal-content">
@@ -106,7 +112,9 @@
             max-width: 900px;
             width: 100%;
             margin: 0 auto;
+            
         }
+/* till here  */
 .custom-confirm-modal {
     display: none;
     position: fixed;
@@ -115,7 +123,14 @@
     width: 100%;
     height: 100%;
     z-index: 1001;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    /* Backdrop animation */
+    
+
 }
+
 
 .modal-backdrop {
     position: fixed;
@@ -126,16 +141,18 @@
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
 }
-
 .modal-content {
     position: relative;
     z-index: 1002;
     background: var(--chat-bg);
     max-width: 400px;
-    margin: 2rem auto;
+    width: 90%; /* Responsive width */
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    animation: modalSlideIn 0.3s ease-out;
+    animation: modalEntrance 0.3s ease-out;
+    /* Center positioning */
+    margin: 0 auto;
+    transform: translateY(0);
 }
 
 .modal-header {
@@ -343,7 +360,7 @@
     flex-direction: column;
     height: calc(100vh - 200px); /* Adjust based on your header height */
     position: relative;
-    background-color: var(--chat-bg);
+    background-color: rgba(255, 255, 255, 0.3);    
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -351,7 +368,7 @@
 .messages-wrapper {
     flex: 1;
     overflow-y: auto;
-    padding: 1rem;
+    padding: 3rem;
     scroll-behavior: smooth;
     min-height: 100px; /* Ensures scroll container has minimum height */
 }
@@ -366,7 +383,7 @@
             .input-area {
                 position: sticky;
                 bottom: 0;
-                background: var(--chat-bg);
+                background-color: rgba(255, 255, 255, 0.5);               
                 padding: 1rem;
                 border-top: 1px solid rgba(0, 0, 0, 0.05);
                 z-index: 2;
@@ -452,6 +469,7 @@
             padding: 1rem;
             gap: 0.5rem;
             border-top: 1px solid rgba(0, 0, 0, 0.05);
+            background-color: rgba(255, 255, 255, 0.5);
         }
 
         #message-input {
@@ -672,10 +690,10 @@
 .input-area {
     position: sticky;
     bottom: 0;
-    background: var(--chat-bg);
     padding: 1rem;
     border-top: 1px solid rgba(0, 0, 0, 0.05);
     z-index: 2;
+    background-color: rgba(255, 255, 255, 0.5);
 }
         @keyframes blink {
             0%, 100% { opacity: 1; }
@@ -716,11 +734,13 @@
             function scrollToBottom() {
             const wrapper = document.getElementById('messages-wrapper');
             // Use smooth scroll and ensure proper timing
+
             requestAnimationFrame(() => {
                 wrapper.scrollTo({
                     top: wrapper.scrollHeight,
                     behavior: 'smooth'
                 });
+
             });
 }
             // Send message function
@@ -1059,7 +1079,7 @@ function confirmClear() {
 }
 
 function showClearModal() {
-    document.getElementById('clearConfirmModal').style.display = 'block';
+    document.getElementById('clearConfirmModal').style.display = 'flex';
 }
 
 function hideClearModal() {

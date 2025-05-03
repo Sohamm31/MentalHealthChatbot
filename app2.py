@@ -194,8 +194,36 @@ def save_message():
 # @app.route("/")
 # def index():
 #     return render_template("chat2.html")
+# Update the index route
 @app.route("/")
 def index():
+    return render_template("landing.html")
+
+# Add new chat route
+# @app.route("/chat")
+# def chat_route():
+#     if "user_id" not in session:
+#         return redirect(url_for("login"))
+    
+#     try:
+#         db = get_db()
+#         cursor = db.cursor()
+#         cursor.execute("""
+#             SELECT user_message, bot_message, created_at 
+#             FROM messages 
+#             WHERE user_id = %s 
+#             ORDER BY created_at ASC
+#         """, (session["user_id"],))
+#         messages = cursor.fetchall()
+#         return render_template("chat2.html", messages=messages)
+#     except Exception as e:
+#         logging.error(f"Error fetching messages: {str(e)}")
+#         return render_template("chat2.html", messages=[])
+#     finally:
+#         cursor.close()
+
+@app.route("/chat")
+def chat_route():
     # if "user_id" not in session:
     #     return redirect(url_for("login"))
     
@@ -206,7 +234,7 @@ def index():
             SELECT user_message, bot_message, created_at 
             FROM messages 
             WHERE user_id = %s 
-            ORDER BY created_at DESC
+            ORDER BY created_at ASC
         """, (session["user_id"],))
         messages = cursor.fetchall()
         return render_template("chat2.html", messages=messages)
@@ -238,6 +266,8 @@ def clear_history():
         cursor.close()
 @app.route("/get", methods=["POST"])
 def chat():
+    if request.method != "POST":
+            return jsonify({"error": "Method not allowed"}), 405
     try:
         msg = request.form["msg"]
         decoded_msg = urllib.parse.unquote_plus(msg) # Add this line

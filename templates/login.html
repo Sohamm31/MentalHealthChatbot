@@ -1,5 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+  .global-frost {
+      background: rgba(255, 255, 255, 0.4) !important;
+  }
+  body, html {
+      overflow: hidden !important;
+      height: 100%;
+      overscroll-behavior: contain;
+  }
+  
+  </style>
 <div class="mindly-container">
   <div class="floating-card">
     <div class="card-inner">
@@ -48,12 +59,7 @@
     </div>
   </div>
   
-  <div class="floating-shapes">
-    <div class="shape shape-1"></div>
-    <div class="shape shape-2"></div>
-    <div class="shape shape-3"></div>
-  </div>
-</div>
+
 
 <style>
   :root {
@@ -67,9 +73,9 @@
   }
 
   body {
-    background: linear-gradient(135deg, var(--background-color), #e1eef6);
+    background: transparent;
     font-family: 'Nunito', sans-serif;
-    color: var(--text-color);
+    color: transparent;
     min-height: 100vh;
     margin: 0;
     display: flex;
@@ -93,7 +99,7 @@
   .floating-card {
     width: 100%;
     max-width: 450px;
-    background: var(--card-color);
+    background-color: rgba(255, 255, 255, 0.5);
     border-radius: 16px;
     box-shadow: 0 15px 35px var(--shadow-color);
     padding: 2rem;
