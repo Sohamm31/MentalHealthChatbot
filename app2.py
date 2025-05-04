@@ -264,6 +264,11 @@ def clear_history():
         return jsonify({"status": "error"}), 500
     finally:
         cursor.close()
+@app.route("/speech")
+def speech_route():
+
+    
+    return render_template("speech_chat.html")
 @app.route("/get", methods=["POST"])
 def chat():
     if request.method != "POST":

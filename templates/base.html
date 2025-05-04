@@ -36,7 +36,19 @@
             opacity: 0;
             overflow-x: hidden;
         }
+/* Add these to your existing CSS */
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
 
+.chat-messages::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 3px;
+}
         .global-background {
             position: fixed;
             top: 0;
@@ -214,9 +226,10 @@
             
             <nav class="nav-links">
                 <a href="{{ url_for('index') }}">Home</a>
-                {% if 'user_id' in session %}
+                
                     <a href="{{ url_for('chat_route') }}">Chat</a>
-                {% endif %}
+                    <a href="{{ url_for('speech_route') }}">Voice Chat</a>
+                
             </nav>
 
             <div class="header-actions">

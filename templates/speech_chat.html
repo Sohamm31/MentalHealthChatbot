@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    
+    .global-frost {
+        background: rgba(255, 255, 255, 0.6) !important;  
+    }
+
+   
+    .chat-messages {
+        background: rgba(255, 255, 255, 0.15) !important;  
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+   
+    .dark-mode .global-frost {
+        background: rgba(0, 0, 0, 0.5) !important;  
+    }
+
+    
+    .message {
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+</style>
+<div class="chat-container">
+    <div class="chat-messages" id="chat-messages">
+        <!-- Messages will be inserted here -->
+    </div>
+    
+    <div class="input-container">
+        <div class="button-group">
+            <button id="mic-button" class="mic-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2h2v2a5 5 0 0 0 10 0v-2h2Z"/>
+                    <path d="M12 18a1 1 0 0 1 1 1v1h-2v-1a1 1 0 0 1 1-1Z"/>
+                </svg>
+            </button>
+            <button id="pause-button" class="pause-button hidden" aria-label="Pause speech">
+                ⏸
+            </button>
+        </div>
+        <div id="preview" class="preview-text"></div>
+        <div id="status" class="status-indicator"></div>
+    </div>
+    
+</div>
+
+<style>
+
+.input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+.button-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+    .preview-text {
+    color: var(--text-secondary);
+    min-height: 1.5rem;
+    margin: 0.5rem 0;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.pause-button {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #ffa500;
+    border: none;
+    cursor: pointer;
+    margin-left: 1rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.pause-button:hover {
+    background: #cc8400;
+    transform: scale(1.05);
+}
+.hidden {
+    display: none !important;
+}
+
+.voice-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.listening .preview-text {
+    color: var(--accent-color);
+    font-weight: 500;
+}
+
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    height: calc(100vh - 120px);
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
+}
+
+.message {
+    margin: 1rem 0;
+    padding: 1rem;
+    border-radius: 15px;
+    max-width: 80%;
+}
+
+.user-message {
+    background: var(--message-sent);
+    margin-left: auto;
+}
+
+.bot-message {
+    background: var(--message-received);
+    margin-right: auto;
+}
+
+.mic-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.mic-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(71, 157, 195, 0.3);
+}
+
+.mic-button.recording {
+    background: #ff4d4d;
+    animation: pulse 1.5s infinite;
+}
+
+.status-indicator {
+    margin-top: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+}
+
+</style>
+
+<script>
+    let recognition;
+    let isRecording = false;
+    let currentUtterance = null;
+    let isPaused = false;
+    
+    // Initialize Speech Recognition with interim results
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;  // Enable interim results
+        recognition.lang = 'en-US';
+    
+        recognition.onresult = function(event) {
+            let interimTranscript = '';
+            let finalTranscript = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript;
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
+                }
+            }
+            
+            // Update preview with interim results
+            document.getElementById('preview').textContent = interimTranscript;
+            
+            if (finalTranscript) {
+                handleUserInput(finalTranscript);
+                updateStatus('Processing...');
+                document.getElementById('preview').textContent = ''; // Clear preview
+            }
+        };
+    
+        recognition.onerror = function(event) {
+            updateStatus('Error occurred: ' + event.error);
+        };
+    
+        recognition.onsoundstart = function() {
+            document.body.classList.add('recording-active');
+        };
+    
+        recognition.onsoundend = function() {
+            document.body.classList.remove('recording-active');
+        };
+    }
+    
+    // Initialize Speech Synthesis
+    const synth = window.speechSynthesis;
+    
+    function speak(text) {
+        if (synth.speaking) synth.cancel();
+        
+        currentUtterance = new SpeechSynthesisUtterance(text);
+        document.getElementById('pause-button').classList.remove('hidden');
+        
+        currentUtterance.voice = synth.getVoices().find(voice => voice.lang === 'en-US');
+        currentUtterance.rate = 1;
+        currentUtterance.pitch = 1;
+        
+        currentUtterance.onend = function() {
+            document.getElementById('pause-button').classList.add('hidden');
+            currentUtterance = null;
+            isPaused = false;
+        };
+        
+        synth.speak(currentUtterance);
+    }
+    
+    function toggleSpeech() {
+        if (!currentUtterance) return;
+        
+        if (isPaused) {
+            synth.resume();
+            isPaused = false;
+            document.getElementById('pause-button').textContent = '⏸';
+        } else {
+            synth.pause();
+            isPaused = true;
+            document.getElementById('pause-button').textContent = '▶';
+        }
+    }
+    
+    async function handleUserInput(text) {
+    // Add user message to chat UI immediately
+    addMessage(text, 'user');
+    
+    try {
+        // Send message to server
+        const response = await fetch('/get', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'msg=' + encodeURIComponent(text)
+        });
+        
+        const botResponse = await response.text();
+        
+        // Add bot response to UI
+        addMessage(botResponse, 'bot');
+        
+        // Store both messages in database through existing /get endpoint
+        // (Already handled by server-side logic)
+        
+        // Speak the response
+        speak(botResponse);
+        updateStatus('Ready');
+        
+    } catch (error) {
+        console.error('Error:', error);
+        updateStatus('Error communicating with server');
+    }
+}
+    
+    function toggleRecording() {
+        if (!recognition) {
+            updateStatus('Speech recognition not supported');
+            return;
+        }
+    
+        if (isRecording) {
+            recognition.stop();
+            micButton.classList.remove('recording');
+            updateStatus('Ready');
+        } else {
+            recognition.start();
+            micButton.classList.add('recording');
+            updateStatus('Listening...');
+        }
+        isRecording = !isRecording;
+    }
+    
+    function addMessage(text, sender) {
+        const messagesDiv = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        messageDiv.textContent = text;
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    function updateStatus(text) {
+        document.getElementById('status').textContent = text;
+    }
+    
+    // Event Listeners
+    const micButton = document.getElementById('mic-button');
+    const pauseButton = document.getElementById('pause-button');
+    micButton.addEventListener('click', toggleRecording);
+    pauseButton.addEventListener('click', toggleSpeech);
+    </script>
+{% endblock %}
